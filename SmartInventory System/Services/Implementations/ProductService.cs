@@ -65,5 +65,43 @@ namespace SmartInventory_System.Services.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> AdjustStockAsync(int productId, int qtyChange, string note)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+                if (product == null) return false;
+
+                // Prevent negative stock
+                if (product.Quantity + qtyChange < 0)
+                    throw new InvalidOperationException("Stock cannot go negative.");
+
+                // Update product quantity
+                product.Quantity += qtyChange;
+
+                // Add StockMovement
+                var movement = new StockMovement
+                {
+                    ProductId = product.Id,
+                    QuantityChange = qtyChange,
+                    Note = note,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.StockMovements.Add(movement);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw; // bubble up
+            }
+        }
+
     }
 }

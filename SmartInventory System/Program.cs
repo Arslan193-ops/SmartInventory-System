@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInventory_System.Data;
+using SmartInventory_System.Services;
 using SmartInventory_System.Services.Implementations;
 using SmartInventory_System.Services.Interfaces;
 
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("dbcs")));
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IStockMovementService, StockMovementService>();
 
 var app = builder.Build();
 

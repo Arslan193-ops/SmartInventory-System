@@ -69,5 +69,22 @@ namespace SmartInventory_System.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("{id}/adjust")]
+        public async Task<IActionResult> AdjustStock(int id, int qtyChange, string note)
+        {
+            try
+            {
+                var success = await _productService.AdjustStockAsync(id, qtyChange, note);
+                if (!success) return NotFound();
+
+                return Ok("Stock adjusted successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

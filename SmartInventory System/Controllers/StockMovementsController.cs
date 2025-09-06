@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SmartInventory_System.Data;
-using SmartInventory_System.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using SmartInventory_System.Services.Interfaces;
 
 namespace SmartInventory_System.Controllers
 {
@@ -14,95 +7,35 @@ namespace SmartInventory_System.Controllers
     [ApiController]
     public class StockMovementsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IStockMovementService _stockMovementService;
 
-        public StockMovementsController(ApplicationDbContext context)
+        public StockMovementsController(IStockMovementService stockMovementService)
         {
-            _context = context;
+            _stockMovementService = stockMovementService;
         }
 
-        // GET: api/StockMovements
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<StockMovement>>> GetStockMovements()
+        // POST: api/StockMovements/adjust?productId=1&qtyChange=-2&note=Sale
+        [HttpPost("adjust")]
+        public async Task<IActionResult> AdjustStock(int productId, int qtyChange, string note)
         {
-            return await _context.StockMovements.ToListAsync();
-        }
-
-        // GET: api/StockMovements/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<StockMovement>> GetStockMovement(int id)
-        {
-            var stockMovement = await _context.StockMovements.FindAsync(id);
-
-            if (stockMovement == null)
-            {
-                return NotFound();
-            }
-
-            return stockMovement;
-        }
-
-        // PUT: api/StockMovements/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutStockMovement(int id, StockMovement stockMovement)
-        {
-            if (id != stockMovement.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(stockMovement).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                var success = await _stockMovementService.RecordMovementAsync(productId, qtyChange, note);
+                if (!success) return NotFound("Product not found.");
+                return Ok("Stock adjusted successfully.");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (InvalidOperationException ex)
             {
-                if (!StockMovementExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(ex.Message);
             }
-
-            return NoContent();
         }
 
-        // POST: api/StockMovements
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<StockMovement>> PostStockMovement(StockMovement stockMovement)
+        // GET: api/StockMovements/1
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetMovements(int productId)
         {
-            _context.StockMovements.Add(stockMovement);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetStockMovement", new { id = stockMovement.Id }, stockMovement);
-        }
-
-        // DELETE: api/StockMovements/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStockMovement(int id)
-        {
-            var stockMovement = await _context.StockMovements.FindAsync(id);
-            if (stockMovement == null)
-            {
-                return NotFound();
-            }
-
-            _context.StockMovements.Remove(stockMovement);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool StockMovementExists(int id)
-        {
-            return _context.StockMovements.Any(e => e.Id == id);
+            var movements = await _stockMovementService.GetMovementsAsync(productId);
+            return Ok(movements);
         }
     }
 }
