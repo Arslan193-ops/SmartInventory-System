@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInventory_System.Data;
+using SmartInventory_System.Services.Implementations;
+using SmartInventory_System.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,8 @@ builder.Services.AddSwaggerGen(); // Swagger/OpenAPI support
 // 2. Configure EF Core DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("dbcs")));
+
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 
