@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartInventory_System.DTOs;
 using SmartInventory_System.Services.Interfaces;
 
 namespace SmartInventory_System.Controllers
@@ -16,11 +17,17 @@ namespace SmartInventory_System.Controllers
 
         // POST: api/StockMovements/adjust?productId=1&qtyChange=-2&note=Sale
         [HttpPost("adjust")]
-        public async Task<IActionResult> AdjustStock(int productId, int qtyChange, string note)
+        public async Task<IActionResult> AdjustStock([FromBody] StockMovementDto dto)
         {
             try
             {
-                var success = await _stockMovementService.RecordMovementAsync(productId, qtyChange, note);
+                // Convert MovementType → qtyChange
+                int qtyChange = dto.MovementType == MovementType.IN
+                    ? dto.Quantity
+                    : -dto.Quantity;
+
+                var success = await _stockMovementService.RecordMovementAsync(dto.ProductId, qtyChange, dto.Note);
+
                 if (!success) return NotFound("Product not found.");
                 return Ok("Stock adjusted successfully.");
             }
@@ -29,6 +36,7 @@ namespace SmartInventory_System.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         // GET: api/StockMovements/1
         [HttpGet("{productId}")]
