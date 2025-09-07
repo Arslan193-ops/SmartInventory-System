@@ -16,6 +16,7 @@ namespace SmartInventory_System.Models
         [MaxLength(100)]
         public string? Barcode { get; set; }
 
+        
         public int Quantity { get; set; } = 0;
 
         public int ReorderLevel { get; set; } = 0;

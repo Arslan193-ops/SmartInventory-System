@@ -33,17 +33,30 @@ namespace SmartInventory_System.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
         }
 
 
         // GET: api/StockMovements/1
         [HttpGet("{productId}")]
-        public async Task<IActionResult> GetMovements(int productId)
+        public async Task<IActionResult> GetMovements(
+            int productId,
+            [FromQuery] DateTime? from,
+            [FromQuery] DateTime? to,
+            [FromQuery] MovementType? movementType,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
-            var movements = await _stockMovementService.GetMovementsAsync(productId);
+            var movements = await _stockMovementService.GetMovementsAsync(
+                productId, from, to, movementType, page, pageSize);
+
             return Ok(movements);
         }
+
     }
 }

@@ -12,6 +12,8 @@ namespace SmartInventory_System.Data
 
         public DbSet<Product> Products => Set<Product>();
         public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+        public DbSet<LowStockAlert> LowStockAlerts { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

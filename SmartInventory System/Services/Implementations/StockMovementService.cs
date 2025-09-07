@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartInventory_System.Data;
+using SmartInventory_System.DTOs;
 using SmartInventory_System.Models;
 using SmartInventory_System.Services.Interfaces;
 
@@ -40,6 +41,18 @@ namespace SmartInventory_System.Services
 
                 _context.StockMovements.Add(movement);
 
+                if (product.Quantity <= product.ReorderLevel)
+                {
+                    var alert = new LowStockAlert
+                    {
+                        ProductId = product.Id,
+                        CurrentQuantity = product.Quantity,
+                        CreatedAt = DateTime.UtcNow,
+                        IsResolved = false
+                    };
+
+                    _context.LowStockAlerts.Add(alert);
+                }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return true;
@@ -51,12 +64,37 @@ namespace SmartInventory_System.Services
             }
         }
 
-        public async Task<IEnumerable<StockMovement>> GetMovementsAsync(int productId)
+        public async Task<IEnumerable<StockMovement>> GetMovementsAsync(
+     int productId,
+     DateTime? from = null,
+     DateTime? to = null,
+     MovementType? movementType = null,
+     int page = 1,
+     int pageSize = 20)
         {
-            return await _context.StockMovements
-                .Where(sm => sm.ProductId == productId)
+            var query = _context.StockMovements
+                .Where(sm => sm.ProductId == productId);
+
+            if (from.HasValue)
+                query = query.Where(sm => sm.CreatedAt >= from.Value);
+
+            if (to.HasValue)
+                query = query.Where(sm => sm.CreatedAt <= to.Value);
+
+            if (movementType.HasValue)
+            {
+                if (movementType == MovementType.IN)
+                    query = query.Where(sm => sm.QuantityChange > 0);
+                else if (movementType == MovementType.OUT)
+                    query = query.Where(sm => sm.QuantityChange < 0);
+            }
+
+            return await query
                 .OrderByDescending(sm => sm.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
+
     }
 }
