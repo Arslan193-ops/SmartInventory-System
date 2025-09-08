@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Core.Types;
 using SmartInventory_System.Data;
 using SmartInventory_System.Models;
 using SmartInventory_System.Services.Interfaces;
@@ -102,6 +103,16 @@ namespace SmartInventory_System.Services.Implementations
                 throw; // bubble up
             }
         }
+
+        public async Task<Product?> GetByBarcodeAsync(string barcode)
+        {
+            if (string.IsNullOrWhiteSpace(barcode))
+                throw new ArgumentException("Barcode cannot be empty");
+
+            return await _context.Products
+                .FirstOrDefaultAsync(p => p.Barcode == barcode);
+        }
+
 
     }
 }

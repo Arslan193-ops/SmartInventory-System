@@ -86,5 +86,16 @@ namespace SmartInventory_System.Controllers
             }
         }
 
+        [HttpGet("scan/{barcode}")]
+        public async Task<IActionResult> ScanBarcode(string barcode)
+        {
+            var product = await _productService.GetByBarcodeAsync(barcode);
+            if (product == null)
+                return NotFound(new { message = "No product found with this barcode" });
+
+            return Ok(product);
+        }
+
+
     }
 }
