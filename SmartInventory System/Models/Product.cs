@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SmartInventory_System.Models
 {
    
+// Move the Index attribute to the class level as required by CS0592
+    [Index(nameof(Barcode), IsUnique = true)]
     public class Product
     {
         public int Id { get; set; }
@@ -16,7 +18,6 @@ namespace SmartInventory_System.Models
         public string Sku { get; set; } = null!; // unique, normalized (we'll uppercase before saving)
 
         [MaxLength(100)]
-        [Index(IsUnique = true)]
         public string? Barcode { get; set; }
 
         public int Quantity { get; set; } = 0;
