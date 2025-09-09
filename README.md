@@ -40,7 +40,7 @@ It demonstrates real-world concepts like authentication, role-based authorizatio
 ## ⚙️ Setup Instructions
 
 1. **Clone the repository**
-   git clone https://github.com/your-username/smart-inventory-system.git
+   git clone https://github.com/Arslan193-ops/SmartInventory-System.git
    cd smartInventory-system
 
 2. Update the database connection string in appsettings.json.
@@ -51,10 +51,10 @@ dotnet ef database update
 4. **Run the application**
 dotnet run
 
-5. Open Swagger UI at
-https://localhost:5001/swagger.
+5. Open **Swagger UI** at
+https://localhost:7278/swagger.
 
 **Default Credentials**
 Admin
-Email: admin@demo.com
+Email: admin@system.com
 Password: Admin@123
