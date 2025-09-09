@@ -1,5 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 
 namespace SmartInventory_System.Controllers
 {
@@ -9,11 +14,12 @@ namespace SmartInventory_System.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-
-        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        private readonly IConfiguration _configuration;
+        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         // POST: api/auth/register
@@ -33,25 +39,58 @@ namespace SmartInventory_System.Controllers
             return BadRequest(result.Errors);
         }
 
-        // POST: api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
+        public async Task<IActionResult> Login(LoginDto model)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-
-            if (result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                // For now, just say "login success"
-                // Later we’ll return a JWT
-                return Ok(new { message = "Login successful!" });
-            }
+                // 1. Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
 
-            return Unauthorized(new { message = "Invalid login attempt." });
+                // 2. Build claims (data inside the token)
+                var authClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+                foreach (var role in roles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                // 3. Create signing key
+                var jwtKey = _configuration["Jwt:Key"];
+                if (string.IsNullOrEmpty(jwtKey))
+                {
+                    return StatusCode(500, "JWT signing key is not configured.");
+                }
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+
+                // 4. Create the token
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["Jwt:Issuer"],
+                    audience: _configuration["Jwt:Audience"],
+                    expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"])),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                );
+
+                // 5. Return the token
+                return Ok(new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    expiration = token.ValidTo
+                });
+            }
+            return Unauthorized("Invalid email or password.");
         }
     }
 
-    // 🔹 DTOs (you can move these to a Models/Dto folder later)
-    public class RegisterDto
+
+        // 🔹 DTOs (you can move these to a Models/Dto folder later)
+        public class RegisterDto
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;

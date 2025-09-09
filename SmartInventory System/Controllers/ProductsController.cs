@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInventory_System.Models;
 using SmartInventory_System.Services.Interfaces;
-
+using Microsoft.AspNetCore.Authorization;
 namespace SmartInventory_System.Controllers
 {
     [Route("api/[controller]")]
@@ -96,6 +96,19 @@ namespace SmartInventory_System.Controllers
             return Ok(product);
         }
 
+        [Authorize] // now requires a valid JWT
+        [HttpGet("secure-products")]
+        public IActionResult GetSecureProducts()
+        {
+            return Ok(new { message = "You are authorized!" });
+        }
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpGet("admin-only")]
+        public IActionResult AdminOnly()
+        {
+            return Ok(new { message = "Hello Admin!" });
+        }
 
     }
 }
