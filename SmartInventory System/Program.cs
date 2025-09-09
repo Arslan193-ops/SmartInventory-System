@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SmartInventory_System.Data;
 using SmartInventory_System.Services;
 using SmartInventory_System.Services.Implementations;
 using SmartInventory_System.Services.Interfaces;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,49 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 var app = builder.Build();
 
+
+
+static async Task SeedRolesAndAdminAsync(IApplicationBuilder app)
+{
+    using var scope = app.ApplicationServices.CreateScope();
+
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    string[] roles = new[] { "ADMIN", "USER" };
+
+    // Ensure roles exist
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Seed a default Admin user
+    string adminEmail = "admin@system.com";
+    string adminPassword = "Admin@123"; // ✅ You can change this
+
+    var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+    if (existingAdmin == null)
+    {
+        var adminUser = new IdentityUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "ADMIN");
+        }
+    }
+}
+
+
 // 5. Middleware
 if (app.Environment.IsDevelopment())
 {
@@ -49,5 +93,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+await SeedRolesAndAdminAsync(app);
+
+app.Run();
+
 
 app.Run();
