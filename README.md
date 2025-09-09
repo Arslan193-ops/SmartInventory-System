@@ -52,7 +52,7 @@ dotnet ef database update
 dotnet run
 
 5. Open **Swagger UI** at
-https://localhost:7278/swagger.
+https://localhost:5001/swagger/
 
 **Default Credentials**
 Admin
