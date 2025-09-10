@@ -8,10 +8,12 @@ namespace SmartInventory_System.Services.Implementations
     public class ProductService : IProductService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IStockMovementService _stockMovementService;
 
-        public ProductService(ApplicationDbContext context)
+        public ProductService(ApplicationDbContext context, IStockMovementService stockMovementService)
         {
             _context = context;
+            _stockMovementService = stockMovementService;
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
@@ -68,39 +70,40 @@ namespace SmartInventory_System.Services.Implementations
 
         public async Task<bool> AdjustStockAsync(int productId, int qtyChange, string note)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            return await _stockMovementService.RecordMovementAsync(productId, qtyChange, note);
+            //using var transaction = await _context.Database.BeginTransactionAsync();
 
-            try
-            {
-                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-                if (product == null) return false;
+            //try
+            //{
+            //    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+            //    if (product == null) return false;
 
-                // Prevent negative stock
-                if (product.Quantity + qtyChange < 0)
-                    throw new InvalidOperationException("Stock cannot go negative.");
+            //    // Prevent negative stock
+            //    if (product.Quantity + qtyChange < 0)
+            //        throw new InvalidOperationException("Stock cannot go negative.");
 
-                // Update product quantity
-                product.Quantity += qtyChange;
+            //    // Update product quantity
+            //    product.Quantity += qtyChange;
 
-                // Add StockMovement
-                var movement = new StockMovement
-                {
-                    ProductId = product.Id,
-                    QuantityChange = qtyChange,
-                    Note = note,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.StockMovements.Add(movement);
+            //    // Add StockMovement
+            //    var movement = new StockMovement
+            //    {
+            //        ProductId = product.Id,
+            //        QuantityChange = qtyChange,
+            //        Note = note,
+            //        CreatedAt = DateTime.UtcNow
+            //    };
+            //    _context.StockMovements.Add(movement);
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw; // bubble up
-            }
+            //    await _context.SaveChangesAsync();
+            //    await transaction.CommitAsync();
+            //    return true;
+            //}
+            //catch
+            //{
+            //    await transaction.RollbackAsync();
+            //    throw; // bubble up
+            //}
         }
 
         public async Task<Product?> GetByBarcodeAsync(string barcode)

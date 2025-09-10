@@ -13,6 +13,5 @@ namespace SmartInventory_System.Services.Interfaces
         Task<Product?> GetByBarcodeAsync(string barcode);
 
 
-
     }
 }
