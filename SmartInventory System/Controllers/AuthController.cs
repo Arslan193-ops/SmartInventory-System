@@ -51,10 +51,10 @@ namespace SmartInventory_System.Controllers
 
                 // 2. Build claims (data inside the token)
                 var authClaims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+                {
+                   new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                   new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
 
                 foreach (var role in roles)
                 {
@@ -87,5 +87,5 @@ namespace SmartInventory_System.Controllers
             }
             return Unauthorized("Invalid email or password.");
         }
-    } 
+    }
 }
