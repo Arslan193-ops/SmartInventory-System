@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using SmartInventory_System.Models.DTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -86,19 +87,5 @@ namespace SmartInventory_System.Controllers
             }
             return Unauthorized("Invalid email or password.");
         }
-    }
-
-
-        // 🔹 DTOs (you can move these to a Models/Dto folder later)
-        public class RegisterDto
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
-
-    public class LoginDto
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    } 
 }

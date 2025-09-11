@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SmartInventory_System.DTOs
+namespace SmartInventory_System.Models.DTOs
 {
     public class StockMovementDto
     {

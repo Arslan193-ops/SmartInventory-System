@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartInventory_System.Data;
-using SmartInventory_System.DTOs;
 using SmartInventory_System.Models;
+using SmartInventory_System.Models.DTOs;
 using SmartInventory_System.Services.Interfaces;
 
 namespace SmartInventory_System.Services

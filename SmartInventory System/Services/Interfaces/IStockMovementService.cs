@@ -1,5 +1,5 @@
-﻿using SmartInventory_System.DTOs;
-using SmartInventory_System.Models;
+﻿using SmartInventory_System.Models;
+using SmartInventory_System.Models.DTOs;
 
 namespace SmartInventory_System.Services.Interfaces
 {

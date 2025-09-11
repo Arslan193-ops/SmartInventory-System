@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SmartInventory_System.DTOs;
+using SmartInventory_System.Models.DTOs;
 using SmartInventory_System.Services.Interfaces;
 
 namespace SmartInventory_System.Controllers

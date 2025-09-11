@@ -1,4 +1,4 @@
-﻿namespace SmartInventory_System.DTOs
+﻿namespace SmartInventory_System.Models.DTOs
 {
     public class LoginDto
     {
