@@ -103,6 +103,13 @@ namespace SmartInventory_System.Controllers
             return Ok(new { message = "You are authorized!" });
         }
 
+        [Authorize]
+        [HttpGet("test-auth")]
+        public IActionResult TestAuth()
+        {
+            return Ok("Authorization is working!");
+        }
+
         [Authorize(Roles = "ADMIN")]
         [HttpGet("admin-only")]
         public IActionResult AdminOnly()
